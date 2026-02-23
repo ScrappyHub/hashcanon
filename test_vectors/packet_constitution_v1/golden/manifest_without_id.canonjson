@@ -1,0 +1,1 @@
+{"option":"A","payload":["payload/hello.txt"],"producer":"test_vectors","schema":"packet.manifest.v1","signatures":["signatures/manifest.sig"]}
