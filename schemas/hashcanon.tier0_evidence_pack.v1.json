@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hashcanon.tier0_evidence_pack.v1",
+  "title": "HashCanon Tier-0 Evidence Pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [ "schema", "utc", "repo_root", "ok", "artifacts" ],
+  "properties": {
+    "schema": { "const": "hashcanon.tier0_evidence_pack.v1" },
+    "utc": { "type": "string", "minLength": 1 },
+    "repo_root": { "type": "string", "minLength": 1 },
+    "ok": { "type": "boolean" },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "tier0_runner", "selftest", "negative_suite", "evidence_ndjson", "sha256sums", "stdout", "stderr" ],
+      "properties": {
+        "tier0_runner": { "$ref": "#/$defs/artifact" },
+        "selftest": { "$ref": "#/$defs/artifact" },
+        "negative_suite": { "$ref": "#/$defs/artifact" },
+        "evidence_ndjson": { "$ref": "#/$defs/artifact" },
+        "sha256sums": { "$ref": "#/$defs/artifact" },
+        "stdout": { "$ref": "#/$defs/artifact" },
+        "stderr": { "$ref": "#/$defs/artifact" }
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "path", "sha256" ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}
