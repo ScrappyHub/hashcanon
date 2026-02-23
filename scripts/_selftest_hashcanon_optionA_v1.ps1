@@ -38,7 +38,7 @@ EnsureDir $Scratch
 $PSExe = Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\powershell.exe"
 if(-not (Test-Path -LiteralPath $PSExe -PathType Leaf)){ throw ("MISSING_POWERSHELL_EXE: " + $PSExe) }
 
-$Runner = Join-Path $Scratch "_RUN_hashcanon_v1_test_vectors_optionA.ps1"
+$Runner = Join-Path $RepoRoot "scripts\hashcanon_run_test_vectors_optionA_v1.ps1"
 if(-not (Test-Path -LiteralPath $Runner -PathType Leaf)){ throw ("MISSING_RUNNER: " + $Runner) }
 
 $stamp = [DateTime]::UtcNow.ToString("yyyyMMdd_HHmmss")
@@ -61,7 +61,7 @@ $ReceiptsDir = Join-Path $RepoRoot "proofs\receipts\hashcanon_selftest"
 EnsureDir $ReceiptsDir
 $receiptPath = Join-Path $ReceiptsDir ($stamp + ".ndjson")
 
-$patchScript = Join-Path $Scratch "_PATCH_fix_pid_collision_v5.ps1"
+$patchScript = Join-Path $RepoRoot "scripts\hashcanon_patch_fix_pid_collision_v5.ps1"
 $patchSha = $null
 if(Test-Path -LiteralPath $patchScript -PathType Leaf){
   $patchSha = Sha256HexFile $patchScript
