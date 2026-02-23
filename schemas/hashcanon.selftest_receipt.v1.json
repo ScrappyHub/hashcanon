@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hashcanon.selftest_receipt.v1",
+  "title": "HashCanon Selftest Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","utc","repo_root","ok","artifacts"],
+  "properties": {
+    "schema": { "const": "hashcanon.selftest_receipt.v1" },
+    "utc": { "type": "string", "minLength": 1 },
+    "repo_root": { "type": "string", "minLength": 1 },
+    "ok": { "type": "boolean" },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_script","patch_script","stdout_log","stderr_log"],
+      "properties": {
+        "run_script": { "$ref": "#/$defs/artifact" },
+        "patch_script": { "$ref": "#/$defs/artifactNullableSha" },
+        "stdout_log": { "$ref": "#/$defs/artifact" },
+        "stderr_log": { "$ref": "#/$defs/artifact" }
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path","sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "artifactNullableSha": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path","sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          ]
+        }
+      }
+    }
+  }
+}
