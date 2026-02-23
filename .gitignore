@@ -5,3 +5,7 @@ proofs/receipts/hashcanon_runner/
 # Keep Tier-0 evidence under hashcanon_tier0 and hashcanon_selftest
 !proofs/receipts/hashcanon_tier0/
 !proofs/receipts/hashcanon_selftest/
+
+# runtime receipts (do not commit)
+proofs/receipts/
+
