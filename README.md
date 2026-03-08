@@ -15,6 +15,8 @@ HashCanon is the deterministic packet-physics and canonical-bytes layer for Cove
 - `scripts/_RUN_hashcanon_tier0_selftest_v1.ps1`
 - `scripts/_selftest_hashcanon_optionA_v1.ps1`
 - `scripts/_selftest_hashcanon_negative_suite_v1.ps1`
+- `scripts/hashcanon_make_minimal_packet_optionA_v1.ps1`
+- `scripts/hashcanon_verify_packet_optionA_v1.ps1`
 - `schemas/hashcanon.selftest_receipt.v1.json`
 - `schemas/hashcanon.tier0_evidence_pack.v1.json`
 - `docs/HASHCANON_SPEC_v1.md`
@@ -23,7 +25,7 @@ HashCanon is the deterministic packet-physics and canonical-bytes layer for Cove
 
 ## Status
 
-Tier-0 is partially sealed. Positive runner/evidence flow exists. Negative suite is present, but the standalone verifier surface still needs to be completed and proven GREEN.
+Tier-0 is close to sealed. Positive runner/evidence flow exists. The remaining requirement is proving the standalone verifier and negative suite GREEN end-to-end.
 
 ## Repository goals
 
@@ -34,8 +36,8 @@ Tier-0 is partially sealed. Positive runner/evidence flow exists. Negative suite
 
 ## Next locked work
 
-1. Add and prove `scripts/hashcanon_verify_packet_optionA_v1.ps1`
-2. Add and prove `scripts/hashcanon_make_minimal_packet_optionA_v1.ps1`
+1. Prove `scripts/hashcanon_verify_packet_optionA_v1.ps1`
+2. Prove `scripts/hashcanon_make_minimal_packet_optionA_v1.ps1`
 3. Re-run negative suite until GREEN
 4. Confirm GitHub Actions runs GREEN on `main`
 

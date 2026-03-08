@@ -16,26 +16,26 @@ function Sha256HexFile([string]$Path){
 }
 
 $PacketDir = (Resolve-Path -LiteralPath $PacketDir).Path
-$manifest = Join-Path $PacketDir "manifest.json"
-$pid = Join-Path $PacketDir "packet_id.txt"
-$sums = Join-Path $PacketDir "sha256sums.txt"
+$manifestPath = Join-Path $PacketDir "manifest.json"
+$packetIdPath = Join-Path $PacketDir "packet_id.txt"
+$sha256sumsPath = Join-Path $PacketDir "sha256sums.txt"
 
-if(-not (Test-Path -LiteralPath $manifest -PathType Leaf)){ throw "HC_VERIFY_MISSING_MANIFEST" }
-if(-not (Test-Path -LiteralPath $pid -PathType Leaf)){ throw "HC_VERIFY_MISSING_PACKET_ID" }
-if(-not (Test-Path -LiteralPath $sums -PathType Leaf)){ throw "HC_VERIFY_MISSING_SHA256SUMS" }
+if(-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)){ throw "HC_VERIFY_MISSING_MANIFEST" }
+if(-not (Test-Path -LiteralPath $packetIdPath -PathType Leaf)){ throw "HC_VERIFY_MISSING_PACKET_ID" }
+if(-not (Test-Path -LiteralPath $sha256sumsPath -PathType Leaf)){ throw "HC_VERIFY_MISSING_SHA256SUMS" }
 
-$mBytes = [System.IO.File]::ReadAllBytes($manifest)
+$mBytes = [System.IO.File]::ReadAllBytes($manifestPath)
 $mText = (New-Object System.Text.UTF8Encoding($false)).GetString($mBytes)
 if($mText -match "(?:^|[^a-zA-Z0-9_])packet_id(?:[^a-zA-Z0-9_]|$)"){ throw "HC_VERIFY_MANIFEST_CONTAINS_PACKET_ID_FIELD" }
 
 $expected = Sha256HexBytes $mBytes
-$pidTxt = ((New-Object System.Text.UTF8Encoding($false)).GetString([System.IO.File]::ReadAllBytes($pid))).Trim()
-if($pidTxt -ne $expected){ throw "HC_VERIFY_PACKET_ID_MISMATCH" }
+$packetIdText = ((New-Object System.Text.UTF8Encoding($false)).GetString([System.IO.File]::ReadAllBytes($packetIdPath))).Trim()
+if($packetIdText -ne $expected){ throw "HC_VERIFY_PACKET_ID_MISMATCH" }
 
 $dirName = (Split-Path -Leaf $PacketDir)
 if($dirName -match "^[0-9a-f]{64}$" -and $dirName -ne $expected){ throw "HC_VERIFY_DIRNAME_PACKETID_MISMATCH" }
 
-$sumText = (New-Object System.Text.UTF8Encoding($false)).GetString([System.IO.File]::ReadAllBytes($sums))
+$sumText = (New-Object System.Text.UTF8Encoding($false)).GetString([System.IO.File]::ReadAllBytes($sha256sumsPath))
 $lines = @(@($sumText -split "`n") | Where-Object { $_.Trim().Length -gt 0 })
 if($lines.Count -lt 1){ throw "HC_VERIFY_SHA256SUMS_EMPTY" }
 

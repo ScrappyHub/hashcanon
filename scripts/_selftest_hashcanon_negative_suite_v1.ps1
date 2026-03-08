@@ -11,11 +11,12 @@ function EnsureDir([string]$p){
 }
 
 function CopyTree([string]$src,[string]$dst){
+  if(-not (Test-Path -LiteralPath $src -PathType Container)){ throw ("COPYTREE_SOURCE_MISSING: " + $src) }
   if(Test-Path -LiteralPath $dst -PathType Container){
     Remove-Item -LiteralPath $dst -Recurse -Force
   }
   New-Item -ItemType Directory -Force -Path $dst | Out-Null
-  Copy-Item -LiteralPath (Join-Path $src '*') -Destination $dst -Recurse -Force
+  Copy-Item -Path (Join-Path $src '*') -Destination $dst -Recurse -Force
 }
 
 $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
