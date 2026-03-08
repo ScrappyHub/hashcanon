@@ -1,4 +1,5 @@
 name: hashcanon-tier0
+
 on:
   push:
     branches: [ "main" ]
@@ -6,19 +7,14 @@ on:
     branches: [ "main" ]
 
 jobs:
-  tier0:
+  full-green:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run Tier-0 unified runner
+
+      - name: Run HashCanon full green runner
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
           $RepoRoot = (Resolve-Path -LiteralPath ".").Path
-          powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File scripts/_RUN_hashcanon_tier0_selftest_v1.ps1 -RepoRoot $RepoRoot
-      - name: Run negative suite
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $RepoRoot = (Resolve-Path -LiteralPath ".").Path
-          powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File scripts/_selftest_hashcanon_negative_suite_v1.ps1 -RepoRoot $RepoRoot
+          powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File scripts/_RUN_hashcanon_full_green_v1.ps1 -RepoRoot $RepoRoot

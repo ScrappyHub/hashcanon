@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hashcanon.full_green_receipt.v1",
+  "title": "HashCanon Full Green Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "utc",
+    "repo_root",
+    "ok",
+    "run_dir",
+    "artifacts"
+  ],
+  "properties": {
+    "schema": { "const": "hashcanon.full_green_receipt.v1" },
+    "utc": { "type": "string", "minLength": 1 },
+    "repo_root": { "type": "string", "minLength": 1 },
+    "ok": { "type": "boolean" },
+    "run_dir": { "type": "string", "minLength": 1 },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tier0_runner",
+        "positive",
+        "negative",
+        "generator",
+        "verifier",
+        "sha256sums"
+      ],
+      "properties": {
+        "tier0_runner": { "$ref": "#/$defs/artifact" },
+        "positive": { "$ref": "#/$defs/artifact" },
+        "negative": { "$ref": "#/$defs/artifact" },
+        "generator": { "$ref": "#/$defs/artifact" },
+        "verifier": { "$ref": "#/$defs/artifact" },
+        "sha256sums": { "$ref": "#/$defs/artifact" }
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "path", "sha256" ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}
