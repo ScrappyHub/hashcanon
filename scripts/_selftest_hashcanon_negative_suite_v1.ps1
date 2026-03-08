@@ -36,7 +36,7 @@ $p0 = Start-Process -FilePath $PSExe -ArgumentList @(
 if($p0.ExitCode -ne 0){ throw ('NEG_MINIMAL_GENERATE_FAILED exit_code=' + $p0.ExitCode) }
 
 $pktRoot = Join-Path $RepoRoot 'test_vectors\hashcanon_optionA\minimal_packet\packet'
-$dirs = @(@(Get-ChildItem -LiteralPath $pktRoot -Directory -ErrorAction Stop))
+$dirs = @(@(Get-ChildItem -LiteralPath $pktRoot -Directory -ErrorAction Stop | Sort-Object Name -Descending))
 if($dirs.Count -lt 1){ throw 'NEG_NO_PACKET_DIR_FOUND' }
 $good = $dirs[0].FullName
 
@@ -57,17 +57,27 @@ function RunExpectFail([string]$case,[string]$dir,[string]$token){
 
   $errTxt = [System.IO.File]::ReadAllText($err,(New-Object System.Text.UTF8Encoding($false)))
   if($p.ExitCode -eq 0){ throw ('NEG_EXPECT_FAIL_BUT_OK: ' + $case) }
-  if(-not ($errTxt -like ('*' + $token + '*'))){ throw ('NEG_MISSING_TOKEN: ' + $case + ' token=' + $token) }
+  if(-not ($errTxt -like ('*' + $token + '*'))){ throw ('NEG_MISSING_TOKEN: ' + $case + ' token=' + $token + ' stderr=' + $errTxt) }
   Write-Host ('NEG_OK: ' + $case) -ForegroundColor Green
 }
 
-# Case 1: tamper sha256sums
+# Case 1: tamper first sha256 only
 $c1 = Join-Path $root 'case1_tamper_sha256sums'
 CopyTree $good $c1
 $sum = Join-Path $c1 'sha256sums.txt'
-$txt = [System.IO.File]::ReadAllText($sum,(New-Object System.Text.UTF8Encoding($false)))
-$txt2 = $txt.Replace('a','b')
-[System.IO.File]::WriteAllText($sum,$txt2,(New-Object System.Text.UTF8Encoding($false)))
+$sumLines = @([System.IO.File]::ReadAllLines($sum, (New-Object System.Text.UTF8Encoding($false))))
+if($sumLines.Count -lt 1){ throw 'NEG_CASE1_EMPTY_SHA256SUMS' }
+
+$first = $sumLines[0]
+if($first.Length -lt 64){ throw 'NEG_CASE1_BAD_FIRST_LINE' }
+
+$orig = $first.Substring(0,64)
+$rest = $first.Substring(64)
+$bad = (('0' * 63) + '1')
+if($orig -eq $bad){ $bad = (('f' * 63) + 'e') }
+
+$sumLines[0] = $bad + $rest
+[System.IO.File]::WriteAllLines($sum, $sumLines, (New-Object System.Text.UTF8Encoding($false)))
 RunExpectFail 'case1' $c1 'HC_VERIFY_SHA256_MISMATCH'
 
 # Case 2: missing manifest.json

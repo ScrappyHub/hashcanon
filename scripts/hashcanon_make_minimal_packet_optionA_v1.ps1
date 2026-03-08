@@ -41,7 +41,18 @@ $manifest = '{"schema":"hashcanon.manifest.optionA.v1","payload_rel":"payload/he
 $manifest = $manifest.Trim()
 
 $enc = New-Object System.Text.UTF8Encoding($false)
-$mBytes = $enc.GetBytes((($manifest -replace "`r`n","`n") -replace "`r","`n"))
+
+# Write to a temp manifest first so PacketId is derived from final on-disk bytes.
+$tmpDir = Join-Path $root "_tmp_build"
+if(Test-Path -LiteralPath $tmpDir -PathType Container){
+  Remove-Item -LiteralPath $tmpDir -Recurse -Force
+}
+EnsureDir $tmpDir
+
+$tmpManifestPath = Join-Path $tmpDir "manifest.json"
+Write-Utf8NoBomLf $tmpManifestPath $manifest
+
+$mBytes = [System.IO.File]::ReadAllBytes($tmpManifestPath)
 $packetId = Sha256HexBytes $mBytes
 
 $pktDir = Join-Path $root $packetId
@@ -52,20 +63,23 @@ EnsureDir $pktDir
 EnsureDir (Join-Path $pktDir "payload")
 
 $manifestPath = Join-Path $pktDir "manifest.json"
-$pidPath = Join-Path $pktDir "packet_id.txt"
-$sumPath = Join-Path $pktDir "sha256sums.txt"
+$packetIdPath = Join-Path $pktDir "packet_id.txt"
+$sha256sumsPath = Join-Path $pktDir "sha256sums.txt"
 $helloPath = Join-Path $pktDir "payload\hello.txt"
 
-Write-Utf8NoBomLf $manifestPath $manifest
-Write-Utf8NoBomLf $pidPath $packetId
+# Move/copy final files into packet dir.
+Copy-Item -LiteralPath $tmpManifestPath -Destination $manifestPath -Force
+Write-Utf8NoBomLf $packetIdPath $packetId
 Write-Utf8NoBomLf $helloPath "hello"
 
 $lines = New-Object System.Collections.Generic.List[string]
 [void]$lines.Add((Sha256HexFile $manifestPath) + "  manifest.json")
-[void]$lines.Add((Sha256HexFile $pidPath) + "  packet_id.txt")
+[void]$lines.Add((Sha256HexFile $packetIdPath) + "  packet_id.txt")
 [void]$lines.Add((Sha256HexFile $helloPath) + "  payload/hello.txt")
 $sumTxt = (@($lines.ToArray()) -join "`n") + "`n"
-Write-Utf8NoBomLf $sumPath $sumTxt
+Write-Utf8NoBomLf $sha256sumsPath $sumTxt
+
+Remove-Item -LiteralPath $tmpDir -Recurse -Force
 
 Write-Host ("MINIMAL_PACKET_ID=" + $packetId) -ForegroundColor Green
 Write-Host ("PACKET_DIR=" + $pktDir) -ForegroundColor Green
