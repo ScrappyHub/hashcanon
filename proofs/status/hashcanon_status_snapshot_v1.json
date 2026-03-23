@@ -1,0 +1,13 @@
+{
+    "schema":  "hashcanon.status_snapshot.v1",
+    "ok":  true,
+    "utc":  "2026-03-22T23:22:21Z",
+    "repo_root":  "C:\\Dev\\hashcanon",
+    "full_green_runner_present":  true,
+    "full_green_receipt_schema_present":  true,
+    "verify_receipt_schema_present":  true,
+    "status_snapshot_schema_present":  true,
+    "minimal_packet_present":  true,
+    "nfl_selftest_present":  true,
+    "latest_full_green_dir":  "C:\\Dev\\hashcanon\\proofs\\receipts\\hashcanon_full_green\\20260309_014459Z"
+}
