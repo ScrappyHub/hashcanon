@@ -13,3 +13,5 @@ proofs/receipts/
 # runtime receipts (do not commit)
 proofs/receipts/
 
+# runtime status snapshots
+proofs/status/runs/

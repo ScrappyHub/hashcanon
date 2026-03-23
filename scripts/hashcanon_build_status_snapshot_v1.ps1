@@ -1,4 +1,7 @@
-param([Parameter(Mandatory=$true)][string]$RepoRoot)
+param(
+  [Parameter(Mandatory=$true)][string]$RepoRoot,
+  [Parameter(Mandatory=$false)][string]$OutPath
+)
 
 $ErrorActionPreference="Stop"
 Set-StrictMode -Version Latest
@@ -21,47 +24,83 @@ function Write-Utf8NoBomLf([string]$Path,[string]$Text){
   [System.IO.File]::WriteAllBytes($Path,$enc.GetBytes($t))
 }
 
+function Sha256HexBytes([byte[]]$b){
+  $sha=[System.Security.Cryptography.SHA256]::Create()
+  try{ $h=$sha.ComputeHash($b) } finally { $sha.Dispose() }
+  ($h | ForEach-Object { $_.ToString("x2") }) -join ""
+}
+
+function Sha256HexFile([string]$Path){
+  if(-not (Test-Path -LiteralPath $Path -PathType Leaf)){
+    throw ("SHA256_MISSING_FILE: " + $Path)
+  }
+  $b=[System.IO.File]::ReadAllBytes($Path)
+  Sha256HexBytes $b
+}
+
 $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 
-$fullGreenRunner = Join-Path $RepoRoot "scripts\_RUN_hashcanon_full_green_v1.ps1"
-$fullGreenSchema = Join-Path $RepoRoot "schemas\hashcanon.full_green_receipt.v1.json"
-$verifySchema    = Join-Path $RepoRoot "schemas\hashcanon.verify_receipt.v1.json"
-$statusSchema    = Join-Path $RepoRoot "schemas\hashcanon.status_snapshot.v1.json"
-$nflSelftest     = Join-Path $RepoRoot "scripts\selftest_hashcanon_nfl_packet_v1.ps1"
-
-$pktRoot = Join-Path $RepoRoot "test_vectors\hashcanon_optionA\minimal_packet\packet"
-$pktDirs = @()
-if(Test-Path -LiteralPath $pktRoot -PathType Container){
-  $pktDirs = @(Get-ChildItem -LiteralPath $pktRoot -Directory | Sort-Object Name -Descending)
-}
-$minimalPacketPresent = ($pktDirs.Count -gt 0)
-
-$fullGreenRoot = Join-Path $RepoRoot "proofs\receipts\hashcanon_full_green"
-$latestFullGreenDir = $null
-if(Test-Path -LiteralPath $fullGreenRoot -PathType Container){
-  $dirs = @(Get-ChildItem -LiteralPath $fullGreenRoot -Directory | Sort-Object Name -Descending)
-  if($dirs.Count -gt 0){ $latestFullGreenDir = $dirs[0].FullName }
+if([string]::IsNullOrWhiteSpace($OutPath)){
+  $OutPath = Join-Path $RepoRoot "proofs\status\hashcanon_status_snapshot_v1.json"
 }
 
-$status = [ordered]@{
+$OutDir = Split-Path -Parent $OutPath
+EnsureDir $OutDir
+
+$ReadmePath   = Join-Path $RepoRoot "README.md"
+$SpecPath     = Join-Path $RepoRoot "docs\HASHCANON_SPEC_v1.md"
+$DoDPath      = Join-Path $RepoRoot "docs\DEFINITION_OF_DONE_TIER0.md"
+$WbsPath      = Join-Path $RepoRoot "docs\WBS_HASHCANON_PROGRESS_LEDGER_v1.md"
+$RunnerPath   = Join-Path $RepoRoot "scripts\_RUN_hashcanon_full_green_v1.ps1"
+$VerifyPath   = Join-Path $RepoRoot "scripts\hashcanon_verify_packet_optionA_v1.ps1"
+$PacketRoot   = Join-Path $RepoRoot "test_vectors\hashcanon_optionA\minimal_packet\packet"
+
+$packetDirs = @()
+if(Test-Path -LiteralPath $PacketRoot -PathType Container){
+  $packetDirs = @(Get-ChildItem -LiteralPath $PacketRoot -Directory -ErrorAction Stop | Sort-Object Name -Descending)
+}
+
+$latestPacketId = $null
+if($packetDirs.Count -gt 0){
+  $latestPacketId = $packetDirs[0].Name
+}
+
+$obj = [ordered]@{
   schema = "hashcanon.status_snapshot.v1"
   ok = $true
-  utc = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
   repo_root = $RepoRoot
-  full_green_runner_present = (Test-Path -LiteralPath $fullGreenRunner -PathType Leaf)
-  full_green_receipt_schema_present = (Test-Path -LiteralPath $fullGreenSchema -PathType Leaf)
-  verify_receipt_schema_present = (Test-Path -LiteralPath $verifySchema -PathType Leaf)
-  status_snapshot_schema_present = (Test-Path -LiteralPath $statusSchema -PathType Leaf)
-  minimal_packet_present = $minimalPacketPresent
-  nfl_selftest_present = (Test-Path -LiteralPath $nflSelftest -PathType Leaf)
-  latest_full_green_dir = $latestFullGreenDir
+  generated_utc = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
+  surfaces = [ordered]@{
+    readme = [ordered]@{
+      present = (Test-Path -LiteralPath $ReadmePath -PathType Leaf)
+      path = $ReadmePath
+    }
+    spec = [ordered]@{
+      present = (Test-Path -LiteralPath $SpecPath -PathType Leaf)
+      path = $SpecPath
+    }
+    definition_of_done = [ordered]@{
+      present = (Test-Path -LiteralPath $DoDPath -PathType Leaf)
+      path = $DoDPath
+    }
+    wbs = [ordered]@{
+      present = (Test-Path -LiteralPath $WbsPath -PathType Leaf)
+      path = $WbsPath
+    }
+    full_green_runner = [ordered]@{
+      present = (Test-Path -LiteralPath $RunnerPath -PathType Leaf)
+      path = $RunnerPath
+    }
+    verifier = [ordered]@{
+      present = (Test-Path -LiteralPath $VerifyPath -PathType Leaf)
+      path = $VerifyPath
+    }
+    latest_optionA_packet_id = $latestPacketId
+  }
 }
 
-$StatusRoot = Join-Path $RepoRoot "proofs\status"
-EnsureDir $StatusRoot
-$StatusPath = Join-Path $StatusRoot "hashcanon_status_snapshot_v1.json"
-$json = ($status | ConvertTo-Json -Depth 6)
-Write-Utf8NoBomLf $StatusPath $json
+$json = ($obj | ConvertTo-Json -Depth 10)
+Write-Utf8NoBomLf $OutPath $json
 
 Write-Host "HASHCANON_STATUS_SNAPSHOT_OK" -ForegroundColor Green
-Write-Host ("STATUS_PATH=" + $StatusPath) -ForegroundColor Green
+Write-Host ("STATUS_SNAPSHOT=" + $OutPath) -ForegroundColor Green
