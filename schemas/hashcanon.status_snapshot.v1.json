@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hashcanon.status_snapshot.v1",
+  "title": "HashCanon Status Snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "ok",
+    "utc",
+    "repo_root",
+    "full_green_runner_present",
+    "full_green_receipt_schema_present",
+    "verify_receipt_schema_present",
+    "status_snapshot_schema_present",
+    "minimal_packet_present",
+    "nfl_selftest_present",
+    "latest_full_green_dir"
+  ],
+  "properties": {
+    "schema": { "const": "hashcanon.status_snapshot.v1" },
+    "ok": { "type": "boolean" },
+    "utc": { "type": "string", "minLength": 1 },
+    "repo_root": { "type": "string", "minLength": 1 },
+    "full_green_runner_present": { "type": "boolean" },
+    "full_green_receipt_schema_present": { "type": "boolean" },
+    "verify_receipt_schema_present": { "type": "boolean" },
+    "status_snapshot_schema_present": { "type": "boolean" },
+    "minimal_packet_present": { "type": "boolean" },
+    "nfl_selftest_present": { "type": "boolean" },
+    "latest_full_green_dir": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1 }
+      ]
+    }
+  }
+}

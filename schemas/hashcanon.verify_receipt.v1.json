@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hashcanon.verify_receipt.v1",
+  "title": "HashCanon Verify Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "ok",
+    "utc",
+    "packet_dir",
+    "packet_id",
+    "manifest_sha256",
+    "packet_id_txt_sha256",
+    "sha256sums_sha256",
+    "verified_files"
+  ],
+  "properties": {
+    "schema": { "const": "hashcanon.verify_receipt.v1" },
+    "ok": { "type": "boolean" },
+    "utc": { "type": "string", "minLength": 1 },
+    "packet_dir": { "type": "string", "minLength": 1 },
+    "packet_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "manifest_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "packet_id_txt_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sha256sums_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "verified_files": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}
